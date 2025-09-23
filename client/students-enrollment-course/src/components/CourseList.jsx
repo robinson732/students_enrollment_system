@@ -1,71 +1,101 @@
-// src/components/CourseList.jsx
+ import { useState } from "react";
 
-import React, { useEffect, useState } from 'react';
-import Enrollment from './Enrollment';  // component to show enrollments per course (see below)
+function CourseList({ courses, setCourses }) {
+  const [editing, setEditing] = useState(null);
+  const [formData, setFormData] = useState({ title: "", instructor: "" });
+  const [newCourse, setNewCourse] = useState({ title: "", instructor: "" });
 
-function CourseList() {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedCourseId, setSelectedCourseId] = useState(null);
-
-  useEffect(() => {
-    async function fetchCourses() {
-      try {
-        setLoading(true);
-        const resp = await fetch('/api/courses'); // adjust URL
-        if (!resp.ok) throw new Error('Failed to fetch courses');
-        const data = await resp.json();
-        setCourses(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchCourses();
-  }, []);
-
-  const handleSelectCourse = (courseId) => {
-    setSelectedCourseId(courseId);
+  // Start editing
+  const handleEdit = (course) => {
+    setEditing(course.id);
+    setFormData({ title: course.title, instructor: course.instructor });
   };
 
-  const handleDeleteCourse = async (courseId) => {
-    if (!window.confirm('Are you sure you want to delete this course?')) return;
-    try {
-      const resp = await fetch(`/api/courses/${courseId}`, {
-        method: 'DELETE'
-      });
-      if (!resp.ok) throw new Error('Failed to delete');
-      // remove from list
-      setCourses(courses.filter(c => c.id !== courseId));
-      // if that was selected, clear it
-      if (selectedCourseId === courseId) {
-        setSelectedCourseId(null);
-      }
-    } catch (err) {
-      alert('Error deleting: ' + err.message);
+  // Update course
+  const handleUpdate = async (id) => {
+    const res = await fetch(`http://127.0.0.1:5000/courses/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    if (res.ok) {
+      const updated = await res.json();
+      setCourses(courses.map((c) => (c.id === id ? updated : c)));
+      setEditing(null);
     }
   };
 
-  if (loading) return <div>Loading courses...</div>;
-  if (error) return <div>Error: {error}</div>;
+  // Delete course
+  const handleDelete = async (id) => {
+    await fetch(`http://127.0.0.1:5000/courses/${id}`, { method: "DELETE" });
+    setCourses(courses.filter((c) => c.id !== id));
+  };
+
+  // Add course
+  const handleAdd = async () => {
+    const res = await fetch("http://127.0.0.1:5000/courses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newCourse),
+    });
+
+    if (res.ok) {
+      const created = await res.json();
+      setCourses([...courses, created]);
+      setNewCourse({ title: "", instructor: "" });
+    }
+  };
 
   return (
     <div>
-      <h2>Courses</h2>
-      <ul>
-        {courses.map(course => (
-          <li key={course.id}>
-            {course.code} — {course.name}&nbsp;
-            <button onClick={() => handleSelectCourse(course.id)}>View Enrollments</button>
-            <button onClick={() => handleDeleteCourse(course.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
+      <h2>📘 Courses</h2>
 
-      {selectedCourseId && (
-        <Enrollment courseId={selectedCourseId} />
+      {/* Add Course Form */}
+      <div>
+        <input
+          placeholder="Title"
+          value={newCourse.title}
+          onChange={(e) =>
+            setNewCourse({ ...newCourse, title: e.target.value })
+          }
+        />
+        <input
+          placeholder="Instructor"
+          value={newCourse.instructor}
+          onChange={(e) =>
+            setNewCourse({ ...newCourse, instructor: e.target.value })
+          }
+        />
+        <button onClick={handleAdd}>➕ Add</button>
+      </div>
+
+      {/* List Courses */}
+      {courses.map((c) =>
+        editing === c.id ? (
+          <div key={c.id}>
+            <input
+              value={formData.title}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+            />
+            <input
+              value={formData.instructor}
+              onChange={(e) =>
+                setFormData({ ...formData, instructor: e.target.value })
+              }
+            />
+            <button onClick={() => handleUpdate(c.id)}>💾 Save</button>
+            <button onClick={() => setEditing(null)}>❌ Cancel</button>
+          </div>
+        ) : (
+          <div key={c.id}>
+            {c.title} - {c.instructor}
+            <button onClick={() => handleEdit(c)}>✏ Edit</button>
+            <button onClick={() => handleDelete(c.id)}>🗑 Delete</button>
+          </div>
+        )
       )}
     </div>
   );

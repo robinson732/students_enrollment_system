@@ -1,18 +1,25 @@
 import { useState, useEffect } from "react";
-import StudentList from "./components/StudentList";
-import CourseList from "./components/CourseList";
-import EnrollmentList from "./components/EnrollmentList";
-
+import StudentList from "./components/StudentList.jsx";
+import CourseList from "./components/CourseList.jsx";
+import EnrollmentList from "./components/EnrollmentList.jsx";
 function App() {
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
 
-   
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/students").then(r => r.json()).then(setStudents);
-    fetch("http://127.0.0.1:5000/courses").then(r => r.json()).then(setCourses);
-    fetch("http://127.0.0.1:5000/enrollments").then(r => r.json()).then(setEnrollments);
+    fetch("/api/students")
+      .then(r => r.ok ? r.json() : Promise.reject("Failed to fetch students"))
+      .then(setStudents)
+      .catch(() => setStudents([]));
+    fetch("/api/courses")
+      .then(r => r.ok ? r.json() : Promise.reject("Failed to fetch courses"))
+      .then(setCourses)
+      .catch(() => setCourses([]));
+    fetch("/api/enrollments")
+      .then(r => r.ok ? r.json() : Promise.reject("Failed to fetch enrollments"))
+      .then(setEnrollments)
+      .catch(() => setEnrollments([]));
   }, []);
 
   return (

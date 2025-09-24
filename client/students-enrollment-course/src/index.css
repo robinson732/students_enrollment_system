@@ -24,8 +24,6 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -65,4 +63,60 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* simple table/button styles */
+.table-wrap { overflow: auto; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #0b1220;
+}
+.table th, .table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #1f2937;
+}
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: #111827;
+}
+button { margin-right: 8px; }
+.btn-secondary { background-color: #374151; }
+.btn-danger { background-color: #991b1b; }
+
+/* badges */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+}
+.badge-success { background-color: #065f46; color: #d1fae5; }
+.badge-warn { background-color: #92400e; color: #ffedd5; }
+
+/* KPI cards */
+.card-kpi {
+  background: #0b1220;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-width: 180px;
+}
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+.kpi-label {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.search-input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #1f2937;
+  background: #0b1220;
+  color: #e5e7eb;
 }

@@ -1,42 +1,17 @@
 import { useState } from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
 export default function StudentList({ students, setStudents }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editDraft, setEditDraft] = useState({ name: "", email: "" });
 
-  async function handleAddStudent(event) {
-    event.preventDefault();
-    setErrorMessage("");
-    if (!name.trim() || !email.trim()) {
-      setErrorMessage("Name and email are required.");
-      return;
-    }
-    const newStudent = { name: name.trim(), email: email.trim() };
-    setSubmitting(true);
-    try {
-      const response = await fetch("http://127.0.0.1:5000/students", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newStudent),
-      });
-      if (!response.ok) throw new Error("Failed to create student");
-      const created = await response.json();
-      setStudents([...students, { status: "Active", ...created }]);
-      setName("");
-      setEmail("");
-    } catch {
-      const optimistic = { localId: Date.now(), status: "Active", ...newStudent };
-      setStudents([...students, optimistic]);
-      setName("");
-      setEmail("");
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const validationSchema = Yup.object({
+    name: Yup.string().trim().min(1, "Required").required("Required"),
+    email: Yup.string().email("Invalid email").required("Required"),
+  });
 
   function getRowId(student, index) {
     return student.id ?? student.localId ?? index;
@@ -62,7 +37,7 @@ export default function StudentList({ students, setStudents }) {
     try {
       const target = students.find((s, i) => getRowId(s, i) === id);
       if (target && target.id == null) return; // no backend id yet; local edit only
-      const res = await fetch(`http://127.0.0.1:5000/students/${target.id}`, {
+  const res = await fetch(`http://127.0.0.1:5000/students/${target.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -79,7 +54,7 @@ export default function StudentList({ students, setStudents }) {
     try {
       const target = previous.find((s, i) => getRowId(s, i) === id);
       if (!target || target.id == null) return; // local only
-      const res = await fetch(`http://127.0.0.1:5000/students/${target.id}`, { method: "DELETE" });
+  const res = await fetch(`http://127.0.0.1:5000/students/${target.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
     } catch {
       setStudents(previous);
@@ -90,23 +65,44 @@ export default function StudentList({ students, setStudents }) {
     <section style={{ marginBottom: "24px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <h2 style={{ margin: 0 }}>Students</h2>
-        <form onSubmit={handleAddStudent} style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          <input
-            type="text"
-            placeholder="Student name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button type="submit" disabled={submitting}>
-            {submitting ? "Adding..." : "Add Student"}
-          </button>
-        </form>
+        <Formik
+          initialValues={{ name: "", email: "" }}
+          validationSchema={validationSchema}
+          onSubmit={async (values, { resetForm }) => {
+            setErrorMessage("");
+            setSubmitting(true);
+            const newStudent = { name: values.name.trim(), email: values.email.trim() };
+            try {
+              const response = await fetch("http://127.0.0.1:5000/students", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newStudent),
+              });
+              if (!response.ok) throw new Error("Failed to create student");
+              const created = await response.json();
+              setStudents([...students, { status: "Active", ...created }]);
+              resetForm();
+            } catch {
+              const optimistic = { localId: Date.now(), status: "Active", ...newStudent };
+              setStudents([...students, optimistic]);
+              resetForm();
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          <Form style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <div>
+              <Field name="name" type="text" placeholder="Student name" />
+              <div className="field-error"><ErrorMessage name="name" /></div>
+            </div>
+            <div>
+              <Field name="email" type="email" placeholder="Email" />
+              <div className="field-error"><ErrorMessage name="email" /></div>
+            </div>
+            <button type="submit" disabled={submitting}>{submitting ? "Adding..." : "Add Student"}</button>
+          </Form>
+        </Formik>
       </div>
       {errorMessage ? <p style={{ color: "crimson" }}>{errorMessage}</p> : null}
       {students && students.length > 0 ? (
@@ -166,5 +162,3 @@ export default function StudentList({ students, setStudents }) {
     </section>
   );
 }
-
-

@@ -30,28 +30,18 @@ function App() {
   }, []);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <aside style={{ width: "240px", background: "#0f172a", color: "#e2e8f0", padding: "20px" }}>
-        <h2 style={{ marginTop: 0, fontSize: "1.1rem" }}>Student Enrollment System</h2>
+    <div className="app-container">
+      <aside className="sidebar">
+        <h2 style={{ marginTop: 0, fontSize: "1.1rem", fontWeight: "600" }}>Student Enrollment System</h2>
         <Navbar />
       </aside>
-      <main style={{ flex: 1, padding: "24px" }}>
+      <main className="main-content">
         <Header />
         <Routes>
           <Route path="/" element={<DashboardPage students={students} courses={courses} enrollments={enrollments} setStudents={setStudents} />} />
           <Route path="/students" element={<StudentsPage students={students} setStudents={setStudents} />} />
           <Route path="/courses" element={<CoursesPage courses={courses} setCourses={setCourses} />} />
-          <Route
-            path="/enrollments"
-            element={
-              <EnrollmentsPage
-                enrollments={enrollments}
-                students={students}
-                courses={courses}
-                setEnrollments={setEnrollments}
-              />
-            }
-          />
+          <Route path="/enrollments" element={<EnrollmentsPage enrollments={enrollments} students={students} courses={courses} setEnrollments={setEnrollments} />} />
         </Routes>
       </main>
     </div>

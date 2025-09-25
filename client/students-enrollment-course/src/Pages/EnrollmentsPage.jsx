@@ -10,5 +10,3 @@ export default function EnrollmentsPage({ enrollments, students, courses, setEnr
     />
   );
 }
-
-

@@ -21,7 +21,9 @@ except ModuleNotFoundError:
     from routes.enrollments import enrollments_bp
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///enrollment.db'
+import os
+db_path = os.path.join(os.path.dirname(__file__), "instance", "enrollment.db")
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 CORS(app)
 db.init_app(app)
@@ -45,4 +47,4 @@ app.register_blueprint(enrollments_bp)
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(debug=True, host='127.0.0.1', port=5000)

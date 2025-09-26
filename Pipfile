@@ -17,6 +17,7 @@ sqlalchemy = "*"
 pydantic = "*"
 sqlite-utils = "*"
 alembic = "*"
+gunicorn = "*"
 
 [dev-packages]
 

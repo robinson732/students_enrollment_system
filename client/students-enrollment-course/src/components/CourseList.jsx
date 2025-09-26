@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { apiPost, apiPut, apiDelete } from "../lib/api";
 
 export default function CourseList({ courses, setCourses }) {
   const [submitting, setSubmitting] = useState(false);
@@ -48,12 +49,7 @@ export default function CourseList({ courses, setCourses }) {
     try {
       const target = courses.find((c, i) => getRowId(c, i) === id);
       if (target && target.id == null) return; // optimistic only
-      const res = await fetch(`http://127.0.0.1:5000/courses/${target.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Failed to update course");
+      await apiPut(`/courses/${target.id}`, payload);
     } catch (error) {
       setErrorMessage(error.message || "Saved locally. Backend update failed.");
       // keep local optimistic update
@@ -67,10 +63,7 @@ export default function CourseList({ courses, setCourses }) {
     try {
       const target = previous.find((c, i) => getRowId(c, i) === id);
       if (!target || target.id == null) return; // optimistic only
-      const res = await fetch(`http://127.0.0.1:5000/courses/${target.id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to delete course");
+      await apiDelete(`/courses/${target.id}`);
     } catch (error) {
       setErrorMessage(error.message || "Deleted locally. Backend delete failed.");
       // keep local optimistic delete
@@ -95,13 +88,7 @@ export default function CourseList({ courses, setCourses }) {
             setSubmitting(true);
             const newCourse = { title: values.title.trim(), instructor: values.instructor.trim() };
             try {
-              const response = await fetch("http://127.0.0.1:5000/courses", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newCourse),
-              });
-              if (!response.ok) throw new Error("Failed to create course");
-              const created = await response.json();
+              const created = await apiPost('/courses', newCourse);
               setCourses([...courses, created]);
               resetForm();
             } catch {

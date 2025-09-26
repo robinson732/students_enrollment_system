@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { apiPost, apiPut, apiDelete } from "../lib/api";
 
 export default function EnrollmentList({ enrollments, students, courses, setEnrollments }) {
   const [submitting, setSubmitting] = useState(false);
@@ -48,12 +49,7 @@ export default function EnrollmentList({ enrollments, students, courses, setEnro
     try {
       const target = previous.find((e, i) => getRowId(e, i) === id);
       if (target && target.id == null) return;
-      const res = await fetch(`http://127.0.0.1:5000/enrollments/${target.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Failed to update");
+      await apiPut(`/enrollments/${target.id}`, payload);
     } catch (error) {
       console.log("API error, keeping local changes:", error);
      
@@ -68,8 +64,7 @@ export default function EnrollmentList({ enrollments, students, courses, setEnro
     setEnrollments(enrollments.filter((e, i) => getRowId(e, i) !== id));
     try {
       if (!target || target.id == null) return;
-      const res = await fetch(`http://127.0.0.1:5000/enrollments/${target.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      await apiDelete(`/enrollments/${target.id}`);
     } catch (error) {
       console.log("API error, keeping local changes:", error);
        
@@ -89,13 +84,7 @@ export default function EnrollmentList({ enrollments, students, courses, setEnro
               setSubmitting(true);
               const newEnrollment = { student_id: Number(values.student_id), course_id: Number(values.course_id), grade: values.grade || null };
               try {
-                const response = await fetch("http://127.0.0.1:5000/enrollments", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(newEnrollment),
-                });
-                if (!response.ok) throw new Error("Failed to create enrollment");
-                const created = await response.json();
+                const created = await apiPost('/enrollments', newEnrollment);
                 setEnrollments([...enrollments, created]);
                 resetForm();
               } catch {

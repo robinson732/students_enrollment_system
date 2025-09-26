@@ -6,6 +6,7 @@ import DashboardPage from "./Pages/DashboardPage";
 import StudentsPage from "./Pages/StudentsPage";
 import CoursesPage from "./Pages/CoursesPage";
 import EnrollmentsPage from "./Pages/EnrollmentsPage";
+import { apiGet } from "./lib/api";
 
 function App() {
   const [students, setStudents] = useState([]);
@@ -13,20 +14,9 @@ function App() {
   const [enrollments, setEnrollments] = useState([]);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/students")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then(setStudents)
-      .catch(() => setStudents([]));
-
-    fetch("http://127.0.0.1:5000/courses")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then(setCourses)
-      .catch(() => setCourses([]));
-
-    fetch("http://127.0.0.1:5000/enrollments")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then(setEnrollments)
-      .catch(() => setEnrollments([]));
+    apiGet('/students').then(setStudents).catch(() => setStudents([]));
+    apiGet('/courses').then(setCourses).catch(() => setCourses([]));
+    apiGet('/enrollments').then(setEnrollments).catch(() => setEnrollments([]));
   }, []);
 
   return (

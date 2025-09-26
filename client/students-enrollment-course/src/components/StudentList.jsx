@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { apiPost, apiPut, apiDelete } from "../lib/api";
 
 export default function StudentList({ students, setStudents }) {
   const [submitting, setSubmitting] = useState(false);
@@ -37,12 +38,7 @@ export default function StudentList({ students, setStudents }) {
     try {
       const target = students.find((s, i) => getRowId(s, i) === id);
       if (target && target.id == null) return; // no backend id yet; local edit only
-  const res = await fetch(`http://127.0.0.1:5000/students/${target.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Failed to update");
+      await apiPut(`/students/${target.id}`, payload);
     } catch {
       setStudents(previous);
     }
@@ -54,8 +50,7 @@ export default function StudentList({ students, setStudents }) {
     try {
       const target = previous.find((s, i) => getRowId(s, i) === id);
       if (!target || target.id == null) return; // local only
-  const res = await fetch(`http://127.0.0.1:5000/students/${target.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      await apiDelete(`/students/${target.id}`);
     } catch {
       setStudents(previous);
     }
@@ -73,13 +68,7 @@ export default function StudentList({ students, setStudents }) {
             setSubmitting(true);
             const newStudent = { name: values.name.trim(), email: values.email.trim() };
             try {
-              const response = await fetch("http://127.0.0.1:5000/students", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newStudent),
-              });
-              if (!response.ok) throw new Error("Failed to create student");
-              const created = await response.json();
+              const created = await apiPost('/students', newStudent);
               setStudents([...students, { status: "Active", ...created }]);
               resetForm();
             } catch {

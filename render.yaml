@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: students-enrollment-api
+    env: python
+    rootDir: server
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT app:app
+    autoDeploy: true
+
+# Optional: add a separate static site for the Vite frontend if desired
+# staticSites:
+#   - name: students-enrollment-frontend
+#     rootDir: client/students-enrollment-course
+#     buildCommand: npm ci && npm run build
+#     staticPublishPath: dist
+#     envVars:
+#       - key: VITE_API_URL
+#         value: https://students-enrollment-api.onrender.com
+

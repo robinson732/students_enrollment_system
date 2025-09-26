@@ -1,26 +1,49 @@
 import { useState, useEffect } from "react";
-import StudentList from "./components/StudentList";
-import CourseList from "./components/CourseList";
-import EnrollmentList from "./components/EnrollmentList";
+import { Routes, Route } from "react-router-dom";
+import Header from "./components/Header";
+import Navbar from "./components/Navbar";
+import DashboardPage from "./Pages/DashboardPage";
+import StudentsPage from "./Pages/StudentsPage";
+import CoursesPage from "./Pages/CoursesPage";
+import EnrollmentsPage from "./Pages/EnrollmentsPage";
 
 function App() {
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
   const [enrollments, setEnrollments] = useState([]);
 
-   
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/students").then(r => r.json()).then(setStudents);
-    fetch("http://127.0.0.1:5000/courses").then(r => r.json()).then(setCourses);
-    fetch("http://127.0.0.1:5000/enrollments").then(r => r.json()).then(setEnrollments);
+    fetch("http://127.0.0.1:5000/students")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then(setStudents)
+      .catch(() => setStudents([]));
+
+    fetch("http://127.0.0.1:5000/courses")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then(setCourses)
+      .catch(() => setCourses([]));
+
+    fetch("http://127.0.0.1:5000/enrollments")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then(setEnrollments)
+      .catch(() => setEnrollments([]));
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>📚 Student Course Enrollment</h1>
-      <StudentList students={students} setStudents={setStudents} />
-      <CourseList courses={courses} setCourses={setCourses} />
-      <EnrollmentList enrollments={enrollments} students={students} courses={courses} setEnrollments={setEnrollments} />
+    <div className="app-container">
+      <aside className="sidebar">
+        <h2 style={{ marginTop: 0, fontSize: "1.1rem", fontWeight: "600" }}>Student Enrollment System</h2>
+        <Navbar />
+      </aside>
+      <main className="main-content">
+        <Header />
+        <Routes>
+          <Route path="/" element={<DashboardPage students={students} courses={courses} enrollments={enrollments} setStudents={setStudents} />} />
+          <Route path="/students" element={<StudentsPage students={students} setStudents={setStudents} />} />
+          <Route path="/courses" element={<CoursesPage courses={courses} setCourses={setCourses} />} />
+          <Route path="/enrollments" element={<EnrollmentsPage enrollments={enrollments} students={students} courses={courses} setEnrollments={setEnrollments} />} />
+        </Routes>
+      </main>
     </div>
   );
 }

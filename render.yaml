@@ -2,7 +2,7 @@
   - type: web
     name: students-enrollment-api
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r server/requirements.txt
     startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT server.app:app
     autoDeploy: true
     healthCheckPath: /students
